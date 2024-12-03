@@ -940,6 +940,15 @@ require('lazy').setup({
       },
     },
   },
+  {
+    'R-nvim/R.nvim',
+    -- Only required if you also set defaults.lazy = true
+    lazy = false,
+    -- R.nvim is still young and we may make some breaking changes from time
+    -- to time. For now we recommend pinning to the latest minor version
+    -- like so:
+    version = '~0.1.0',
+  },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
