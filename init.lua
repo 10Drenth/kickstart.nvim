@@ -218,6 +218,9 @@ if not vim.loop.fs_stat(lazypath) then
 end ---@diagnostic disable-next-line: undefined-field
 vim.opt.rtp:prepend(lazypath)
 
+-- In the editor settings under the external text editor options, define:
+-- Exec path: nvim
+-- Exec flags: --server ./godothost --remote-send "<C-><C-N>:n {file}<CR>{line}G{col}|"
 local gdproject = io.open(vim.fn.getcwd() .. '/project.godot', 'r')
 if gdproject then
   io.close(gdproject)
