@@ -220,7 +220,7 @@ vim.opt.rtp:prepend(lazypath)
 
 -- In the editor settings under the external text editor options, define:
 -- Exec path: nvim
--- Exec flags: --server ./godothost --remote-send "<C-><C-N>:n {file}<CR>{line}G{col}|"
+-- Exec flags: --server ./godothost --remote-send "<C-\><C-N>:n {file}<CR>{line}G{col}|"
 local gdproject = io.open(vim.fn.getcwd() .. '/project.godot', 'r')
 if gdproject then
   io.close(gdproject)
@@ -878,7 +878,7 @@ require('lazy').setup({
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
         additional_vim_regex_highlighting = { 'ruby' },
       },
-      indent = { enable = true, disable = { 'ruby', 'gdscript' } },
+      indent = { enable = true, disable = { 'ruby', 'gdscript', 'cpp' } },
       incremental_selection = {
         enable = true,
         keymaps = {
