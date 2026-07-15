@@ -233,6 +233,43 @@ end
 ---@type vim.Option
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
+--
+-- Function to find Godot project root directory
+local function find_godot_project_root()
+  local cwd = vim.fn.getcwd()
+  local search_paths = { '', '/..' }
+
+  for _, relative_path in ipairs(search_paths) do
+    local project_file = cwd .. relative_path .. '/project.godot'
+    if vim.uv.fs_stat(project_file) then
+      return cwd .. relative_path
+    end
+  end
+
+  return nil
+end
+
+-- Function to check if server is already running
+local function is_server_running(project_path)
+  local server_pipe = project_path .. '/server.pipe'
+  return vim.uv.fs_stat(server_pipe) ~= nil
+end
+
+-- Function to start Godot server if needed
+local function start_godot_server_if_needed()
+  local godot_project_path = find_godot_project_root()
+
+  if godot_project_path and not is_server_running(godot_project_path) then
+    vim.fn.serverstart(godot_project_path .. '/server.pipe')
+    vim.lsp.enable 'gdscript'
+    return true
+  end
+
+  return false
+end
+
+-- Main execution
+start_godot_server_if_needed()
 
 -- [[ Configure and install plugins ]]
 --
@@ -350,7 +387,46 @@ require('lazy').setup({
       },
     },
   },
-
+  -- GODOT
+  { 'habamax/vim-godot' },
+  { 'skywind3000/asyncrun.vim' },
+  { 'teatek/gdscript-extended-lsp.nvim', opts = { view_type = 'floating', picker = 'snacks' } },
+  {
+    'folke/snacks.nvim',
+    opts = {
+      picker = {
+        sources = {
+          explorer = {
+            hidden = true, -- show hidden files
+            ignored = false, -- don't show gitignored files
+            exclude = { -- exclude specific patterns
+              '*.uid', -- glob pattern for files ending with .uid
+              'server.pipe', -- exact filename match
+            },
+          },
+        },
+      },
+    },
+  },
+  -- LaTeX
+  {
+    'lervag/vimtex',
+    lazy = false, -- we don't want to lazy load VimTeX
+    -- tag = "v2.15", -- uncomment to pin to a specific release
+    init = function()
+      -- VimTeX configuration goes here, e.g.
+      vim.g.vimtex_view_method = 'zathura'
+      vim.g.vimtex_compiler_latexmk = {
+        options = {
+          '-verbose',
+          '-file-line-error',
+          '-synctex=1',
+          '-interaction=nonstopmode',
+          '-shell-escape',
+        },
+      }
+    end,
+  },
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -851,6 +927,7 @@ require('lazy').setup({
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
         documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        trigger = { prefetch_on_insert = false },
       },
 
       sources = {
@@ -858,6 +935,9 @@ require('lazy').setup({
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
         },
+        -- per_filetype = {
+        --   codecompanion = { 'codecompanion' },
+        -- },
       },
 
       snippets = { preset = 'luasnip' },
@@ -919,6 +999,8 @@ require('lazy').setup({
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
+      require('mini.diff').setup()
+
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
@@ -941,7 +1023,7 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    -- main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
